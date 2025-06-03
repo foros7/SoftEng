@@ -1,10 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thesis Project Dashboard</title>
+    <title>Student Dashboard</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -180,7 +182,7 @@
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 px-0 position-fixed sidebar">
                 <div class="sidebar-brand">
-                    <h2><i class="fas fa-graduation-cap me-2"></i>Thesis</h2>
+                    <h2><i class="fas fa-graduation-cap me-2"></i>Student</h2>
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -213,9 +215,32 @@
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 ms-auto main-content">
+                <!-- Debug Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Debug Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p><strong>Username:</strong> ${username}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Number of Assignments:</strong> ${assignments.size()}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Number of Appointments:</strong> ${appointments.size()}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Overall Progress:</strong> ${overallProgress}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Topbar -->
                 <div class="topbar d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Welcome, <%= session.getAttribute("username") %></h4>
+                    <h4 class="mb-0">Welcome, ${sessionScope.username}</h4>
                     <div class="d-flex align-items-center">
                         <div class="dropdown me-3">
                             <button class="btn btn-link text-dark" type="button" id="notificationsDropdown" data-bs-toggle="dropdown">
@@ -266,7 +291,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="number">75%</div>
+                                        <div class="number"><fmt:formatNumber value="${overallProgress}" pattern="0"/>%</div>
                                         <div class="label">Project Progress</div>
                                     </div>
                                     <div class="icon">
@@ -281,7 +306,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="number">3</div>
+                                        <div class="number">${appointments.size()}</div>
                                         <div class="label">Upcoming Meetings</div>
                                     </div>
                                     <div class="icon">
@@ -296,7 +321,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="number">2</div>
+                                        <div class="number">${pendingTasks}</div>
                                         <div class="label">Pending Tasks</div>
                                     </div>
                                     <div class="icon">
@@ -321,7 +346,13 @@
                             </div>
                             <div class="card-body">
                                 <div class="progress mb-4" style="height: 25px;">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         style="width: ${overallProgress}%;" 
+                                         aria-valuenow="${overallProgress}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        <fmt:formatNumber value="${overallProgress}" pattern="0"/>%
+                                    </div>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table">
@@ -335,15 +366,26 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>AI-Powered Student Management System</td>
-                                                <td>Java</td>
-                                                <td>Spring Boot, MySQL</td>
-                                                <td><span class="badge bg-warning">In Progress</span></td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary">View</button>
-                                                </td>
-                                            </tr>
+                                            <c:forEach items="${assignments}" var="assignment">
+                                                <tr>
+                                                    <td>${assignment.topic}</td>
+                                                    <td>${assignment.language}</td>
+                                                    <td>${assignment.technologies}</td>
+                                                    <td>
+                                                        <form action="update-assignment-progress" method="POST" class="d-inline">
+                                                            <input type="hidden" name="assignmentId" value="${assignment.id}">
+                                                            <select name="progress" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                                <option value="Not Started" ${assignment.progress == 'Not Started' ? 'selected' : ''}>Not Started</option>
+                                                                <option value="In Progress" ${assignment.progress == 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                                                <option value="Completed" ${assignment.progress == 'Completed' ? 'selected' : ''}>Completed</option>
+                                                            </select>
+                                                        </form>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewAssignmentModal${assignment.id}">View</button>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
                                         </tbody>
                                     </table>
                                 </div>
@@ -358,30 +400,26 @@
                                 <h5 class="mb-0">Upcoming Meetings</h5>
                             </div>
                             <div class="card-body">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0">
-                                        <div class="bg-primary text-white rounded p-2 text-center" style="width: 50px;">
-                                            <div class="small">MAR</div>
-                                            <div class="fw-bold">15</div>
+                                <c:forEach items="${appointments}" var="appointment">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="bg-primary text-white rounded p-2 text-center" style="width: 50px;">
+                                                <div class="small">
+                                                    <fmt:formatDate value="${appointment.dayTime}" pattern="MMM"/>
+                                                </div>
+                                                <div class="fw-bold">
+                                                    <fmt:formatDate value="${appointment.dayTime}" pattern="dd"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">${appointment.purpose}</h6>
+                                            <small class="text-muted">
+                                                <fmt:formatDate value="${appointment.dayTime}" pattern="hh:mm a"/>
+                                            </small>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0">Progress Review</h6>
-                                        <small class="text-muted">10:00 AM - 11:00 AM</small>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0">
-                                        <div class="bg-success text-white rounded p-2 text-center" style="width: 50px;">
-                                            <div class="small">MAR</div>
-                                            <div class="fw-bold">22</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0">Implementation Discussion</h6>
-                                        <small class="text-muted">2:00 PM - 3:00 PM</small>
-                                    </div>
-                                </div>
+                                </c:forEach>
                             </div>
                         </div>
                     </div>

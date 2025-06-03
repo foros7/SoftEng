@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,20 +67,20 @@
                                 <h6 class="m-0 font-weight-bold">Appointment Details</h6>
                             </div>
                             <div class="card-body">
-                                <% if (request.getAttribute("error") != null) { %>
+                                <c:if test="${not empty error}">
                                     <div class="alert alert-danger">
-                                        <%= request.getAttribute("error") %>
+                                        ${error}
                                     </div>
-                                <% } %>
+                                </c:if>
                                 <form action="book-appointment" method="POST">
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label for="advisor" class="form-label">Select Advisor</label>
                                             <select class="form-select" id="advisor" name="advisor" required>
                                                 <option value="">Choose an advisor...</option>
-                                                <option value="1">Dr. Smith - Academic Advisor</option>
-                                                <option value="2">Dr. Johnson - Course Planning</option>
-                                                <option value="3">Dr. Williams - Career Counseling</option>
+                                                <c:forEach items="${advisors}" var="advisor">
+                                                    <option value="${advisor.id}">${advisor.title} ${advisor.name}</option>
+                                                </c:forEach>
                                             </select>
                                         </div>
                                         <div class="col-md-6">
