@@ -4,7 +4,7 @@ public class DatabaseConfig {
     // Database credentials
     public static final String DB_URL = "jdbc:mysql://localhost:3306/university_db";
     public static final String USER = "root";
-    public static final String PASS = "";
+    public static final String PASS = "root";
 
     // Table names
     public static final String USERS_TABLE = "users";

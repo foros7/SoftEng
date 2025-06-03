@@ -1,52 +1,46 @@
 package com.mycompany.softeng.dao;
 
 import com.mycompany.softeng.model.Assignment;
-import com.mycompany.softeng.util.DatabaseConfig;
 import com.mycompany.softeng.util.DatabaseUtil;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class AssignmentDAO implements BaseDAO<Assignment> {
+public class AssignmentDAO {
+    private static final Logger LOGGER = Logger.getLogger(AssignmentDAO.class.getName());
 
-    @Override
-    public Assignment create(Assignment assignment) throws Exception {
-        String sql = "INSERT INTO " + DatabaseConfig.ASSIGNMENTS_TABLE +
-                " (topic, start_date, language, technologies, progress, student_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+    public AssignmentDAO() {
+    }
 
+    public void create(Assignment assignment) throws SQLException {
+        String sql = "INSERT INTO assignments (topic, start_date, language, technologies, progress, student_id) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, assignment.getTopic());
+            stmt.setDate(2, new java.sql.Date(assignment.getStartDate().getTime()));
+            stmt.setString(3, assignment.getLanguage());
+            stmt.setString(4, assignment.getTechnologies());
+            stmt.setString(5, assignment.getProgress());
+            stmt.setInt(6, assignment.getStudentId());
 
-            pstmt.setString(1, assignment.getTopic());
-            pstmt.setDate(2, new java.sql.Date(assignment.getStartDate().getTime()));
-            pstmt.setString(3, assignment.getLanguage());
-            pstmt.setString(4, assignment.getTechnologies());
-            pstmt.setString(5, assignment.getProgress());
-            pstmt.setInt(6, assignment.getStudentId());
+            stmt.executeUpdate();
 
-            pstmt.executeUpdate();
-
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    assignment.setId(rs.getInt(1));
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    assignment.setId(generatedKeys.getInt(1));
                 }
             }
-
-            return assignment;
         }
     }
 
-    @Override
-    public Assignment getById(int id) throws Exception {
-        String sql = "SELECT * FROM " + DatabaseConfig.ASSIGNMENTS_TABLE + " WHERE id = ?";
-
+    public Assignment getById(int id) throws SQLException {
+        String sql = "SELECT * FROM assignments WHERE id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return extractAssignmentFromResultSet(rs);
                 }
@@ -55,72 +49,50 @@ public class AssignmentDAO implements BaseDAO<Assignment> {
         return null;
     }
 
-    @Override
-    public List<Assignment> getAll() throws Exception {
+    public List<Assignment> getByStudentId(int studentId) throws SQLException {
         List<Assignment> assignments = new ArrayList<>();
-        String sql = "SELECT * FROM " + DatabaseConfig.ASSIGNMENTS_TABLE;
+        String sql = "SELECT * FROM assignments WHERE student_id = ? ORDER BY start_date DESC";
+        LOGGER.info("Retrieving assignments for student ID: " + studentId);
 
         try (Connection conn = DatabaseUtil.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                assignments.add(extractAssignmentFromResultSet(rs));
-            }
-        }
-        return assignments;
-    }
-
-    @Override
-    public Assignment update(Assignment assignment) throws Exception {
-        String sql = "UPDATE " + DatabaseConfig.ASSIGNMENTS_TABLE +
-                " SET topic = ?, start_date = ?, language = ?, technologies = ?, " +
-                "progress = ?, student_id = ? WHERE id = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, assignment.getTopic());
-            pstmt.setDate(2, new java.sql.Date(assignment.getStartDate().getTime()));
-            pstmt.setString(3, assignment.getLanguage());
-            pstmt.setString(4, assignment.getTechnologies());
-            pstmt.setString(5, assignment.getProgress());
-            pstmt.setInt(6, assignment.getStudentId());
-            pstmt.setInt(7, assignment.getId());
-
-            pstmt.executeUpdate();
-            return assignment;
-        }
-    }
-
-    @Override
-    public boolean delete(int id) throws Exception {
-        String sql = "DELETE FROM " + DatabaseConfig.ASSIGNMENTS_TABLE + " WHERE id = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-            return pstmt.executeUpdate() > 0;
-        }
-    }
-
-    public List<Assignment> getByStudentId(int studentId) throws Exception {
-        List<Assignment> assignments = new ArrayList<>();
-        String sql = "SELECT * FROM " + DatabaseConfig.ASSIGNMENTS_TABLE + " WHERE student_id = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, studentId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    assignments.add(extractAssignmentFromResultSet(rs));
+                    Assignment assignment = extractAssignmentFromResultSet(rs);
+                    LOGGER.info("Found assignment: ID=" + assignment.getId() +
+                            ", Topic=" + assignment.getTopic() +
+                            ", StudentID=" + assignment.getStudentId());
+                    assignments.add(assignment);
                 }
             }
         }
+        LOGGER.info("Total assignments found: " + assignments.size());
         return assignments;
+    }
+
+    public void update(Assignment assignment) throws SQLException {
+        String sql = "UPDATE assignments SET topic = ?, start_date = ?, language = ?, technologies = ?, progress = ? WHERE id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, assignment.getTopic());
+            stmt.setDate(2, new java.sql.Date(assignment.getStartDate().getTime()));
+            stmt.setString(3, assignment.getLanguage());
+            stmt.setString(4, assignment.getTechnologies());
+            stmt.setString(5, assignment.getProgress());
+            stmt.setInt(6, assignment.getId());
+
+            stmt.executeUpdate();
+        }
+    }
+
+    public void delete(int id) throws SQLException {
+        String sql = "DELETE FROM assignments WHERE id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
     }
 
     private Assignment extractAssignmentFromResultSet(ResultSet rs) throws SQLException {
@@ -132,6 +104,7 @@ public class AssignmentDAO implements BaseDAO<Assignment> {
         assignment.setTechnologies(rs.getString("technologies"));
         assignment.setProgress(rs.getString("progress"));
         assignment.setStudentId(rs.getInt("student_id"));
+        assignment.setCreatedAt(rs.getTimestamp("created_at"));
         return assignment;
     }
 }

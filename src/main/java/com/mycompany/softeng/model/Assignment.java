@@ -1,6 +1,7 @@
 package com.mycompany.softeng.model;
 
 import java.util.Date;
+import java.sql.Timestamp;
 
 public class Assignment {
     private int id;
@@ -10,6 +11,7 @@ public class Assignment {
     private String technologies;
     private String progress;
     private int studentId;
+    private Timestamp createdAt;
 
     public Assignment() {
     }
@@ -79,6 +81,14 @@ public class Assignment {
 
     public void setStudentId(int studentId) {
         this.studentId = studentId;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     public void show_Proodos() {

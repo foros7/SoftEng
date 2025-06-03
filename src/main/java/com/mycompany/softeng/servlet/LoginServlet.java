@@ -2,16 +2,19 @@ package com.mycompany.softeng.servlet;
 
 import com.mycompany.softeng.dao.UserDAO;
 import com.mycompany.softeng.model.User;
-import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "LoginServlet", urlPatterns = { "/login" })
 public class LoginServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
     private UserDAO userDAO;
 
     @Override
@@ -25,51 +28,56 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        // Test user bypass
-        if ("test".equals(username)) {
+        LOGGER.info("Login attempt - Username: " + username);
+
+        // For testing purposes - remove in production
+        if ("test".equals(username) && "test".equals(password)) {
+            LOGGER.info("Using hardcoded test credentials");
             HttpSession session = request.getSession();
-            User testUser = new User();
-            testUser.setUsername("test");
-            testUser.setName("Test User");
-            testUser.setUserType("student"); // Default to student role
-            session.setAttribute("user", testUser);
-            session.setAttribute("userType", "student");
-            response.sendRedirect("student.jsp");
+            session.setAttribute("username", username);
+            session.setAttribute("role", "student");
+            response.sendRedirect("student-dashboard");
             return;
         }
 
         try {
-            User user = userDAO.findByUsername(username);
+            LOGGER.info("Attempting database authentication");
+            User user = userDAO.authenticate(username, password);
 
-            if (user != null && user.getPassword().equals(password)) {
-                // Create session and store user information
+            if (user != null) {
+                LOGGER.info("Authentication successful for user: " + username);
                 HttpSession session = request.getSession();
-                session.setAttribute("user", user);
-                session.setAttribute("userType", user.getUserType());
+                session.setAttribute("username", username);
+                session.setAttribute("role", user.getRole());
+                session.setAttribute("fullName", user.getFullName());
 
-                // Redirect based on user type
-                switch (user.getUserType().toLowerCase()) {
+                String redirectUrl;
+                switch (user.getRole().toLowerCase()) {
                     case "student":
-                        response.sendRedirect("student.jsp");
+                        redirectUrl = "student-dashboard";
                         break;
                     case "professor":
-                        response.sendRedirect("professor.jsp");
+                        redirectUrl = "professor-dashboard";
                         break;
                     case "secretary":
-                        response.sendRedirect("secretary.jsp");
+                        redirectUrl = "secretary-dashboard";
                         break;
                     default:
-                        response.sendRedirect("index.jsp");
+                        LOGGER.warning("Invalid role for user " + username + ": " + user.getRole());
+                        redirectUrl = "login.jsp";
+                        break;
                 }
+
+                LOGGER.info("Redirecting to: " + redirectUrl);
+                response.sendRedirect(redirectUrl);
             } else {
-                // Invalid credentials
+                LOGGER.warning("Authentication failed for user: " + username);
                 request.setAttribute("error", "Invalid username or password");
                 request.getRequestDispatcher("login.jsp").forward(request, response);
             }
         } catch (Exception e) {
-            // Log the error
-            e.printStackTrace();
-            request.setAttribute("error", "An error occurred during login");
+            LOGGER.log(Level.SEVERE, "Error during login for user: " + username, e);
+            request.setAttribute("error", "An error occurred during login: " + e.getMessage());
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }

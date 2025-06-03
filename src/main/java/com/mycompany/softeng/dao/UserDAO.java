@@ -1,26 +1,30 @@
 package com.mycompany.softeng.dao;
 
 import com.mycompany.softeng.model.User;
-import com.mycompany.softeng.util.DatabaseConfig;
 import com.mycompany.softeng.util.DatabaseUtil;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class UserDAO implements BaseDAO<User> {
+public class UserDAO {
+    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
-    @Override
-    public User create(User user) throws Exception {
-        String sql = "INSERT INTO " + DatabaseConfig.USERS_TABLE +
-                " (username, password, user_type, name) VALUES (?, ?, ?, ?)";
+    public User create(User user) throws SQLException {
+        String sql = "INSERT INTO users (username, password, user_type, name, email, phone) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, user.getUsername());
             pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getUserType());
-            pstmt.setString(4, user.getName());
+            pstmt.setString(3, user.getRole());
+            pstmt.setString(4, user.getFullName());
+            pstmt.setString(5, user.getEmail());
+            pstmt.setString(6, user.getPhone());
 
             pstmt.executeUpdate();
 
@@ -34,9 +38,8 @@ public class UserDAO implements BaseDAO<User> {
         }
     }
 
-    @Override
-    public User getById(int id) throws Exception {
-        String sql = "SELECT * FROM " + DatabaseConfig.USERS_TABLE + " WHERE id = ?";
+    public User getById(int id) throws SQLException {
+        String sql = "SELECT * FROM users WHERE id = ?";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -52,10 +55,9 @@ public class UserDAO implements BaseDAO<User> {
         return null;
     }
 
-    @Override
-    public List<User> getAll() throws Exception {
+    public List<User> getAll() throws SQLException {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM " + DatabaseConfig.USERS_TABLE;
+        String sql = "SELECT * FROM users";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 Statement stmt = conn.createStatement();
@@ -68,28 +70,31 @@ public class UserDAO implements BaseDAO<User> {
         return users;
     }
 
-    @Override
-    public User update(User user) throws Exception {
-        String sql = "UPDATE " + DatabaseConfig.USERS_TABLE +
-                " SET username = ?, password = ?, user_type = ?, name = ? WHERE id = ?";
+    public User update(User user) throws SQLException {
+        String sql = "UPDATE users SET username = ?, full_name = ?, email = ?, phone = ?, " +
+                "date_of_birth = ?, role = ?, title = ?, major = ?, year_level = ? WHERE id = ?";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getUserType());
-            pstmt.setString(4, user.getName());
-            pstmt.setInt(5, user.getId());
+            pstmt.setString(2, user.getFullName());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getPhone());
+            pstmt.setString(5, user.getDateOfBirth());
+            pstmt.setString(6, user.getRole());
+            pstmt.setString(7, user.getTitle());
+            pstmt.setString(8, user.getMajor());
+            pstmt.setString(9, user.getYearLevel());
+            pstmt.setInt(10, user.getId());
 
             pstmt.executeUpdate();
             return user;
         }
     }
 
-    @Override
-    public boolean delete(int id) throws Exception {
-        String sql = "DELETE FROM " + DatabaseConfig.USERS_TABLE + " WHERE id = ?";
+    public boolean delete(int id) throws SQLException {
+        String sql = "DELETE FROM users WHERE id = ?";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -99,19 +104,48 @@ public class UserDAO implements BaseDAO<User> {
         }
     }
 
-    public User findByUsername(String username) throws Exception {
-        String sql = "SELECT * FROM " + DatabaseConfig.USERS_TABLE + " WHERE username = ?";
+    public User authenticate(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        LOGGER.info("Authenticating user: " + username);
 
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, username);
+            stmt.setString(1, username);
+            stmt.setString(2, password);
 
-            try (ResultSet rs = pstmt.executeQuery()) {
+            LOGGER.info("Executing authentication query");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    LOGGER.info("User found in database");
+                    User user = extractUserFromResultSet(rs);
+                    LOGGER.info("User role: " + user.getRole());
+                    return user;
+                } else {
+                    LOGGER.warning("No user found with username: " + username);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error authenticating user: " + username, e);
+        }
+        return null;
+    }
+
+    public User findByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return extractUserFromResultSet(rs);
                 }
             }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding user by username", e);
         }
         return null;
     }
@@ -120,9 +154,11 @@ public class UserDAO implements BaseDAO<User> {
         User user = new User();
         user.setId(rs.getInt("id"));
         user.setUsername(rs.getString("username"));
-        user.setPassword(rs.getString("password"));
-        user.setUserType(rs.getString("user_type"));
-        user.setName(rs.getString("name"));
+        user.setFullName(rs.getString("name"));
+        user.setEmail(rs.getString("email"));
+        user.setPhone(rs.getString("phone"));
+        user.setRole(rs.getString("user_type"));
+        user.setCreatedAt(rs.getTimestamp("created_at"));
         return user;
     }
 }

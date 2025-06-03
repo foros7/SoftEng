@@ -1,25 +1,22 @@
 package com.mycompany.softeng.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class Appointment {
     private int id;
-    private int assignmentId;
-    private Date dayTime;
-    private int duration;
-    private String purpose;
+    private String studentUsername;
+    private String advisorId;
+    private String advisorName;
+    private String advisorTitle;
+    private String appointmentType;
+    private String date;
+    private String time;
+    private String reason;
+    private String additionalNotes;
     private String status;
-    private Date createdAt;
+    private Timestamp createdAt;
 
     public Appointment() {
-    }
-
-    public Appointment(int assignmentId, Date dayTime, int duration, String purpose, String status) {
-        this.assignmentId = assignmentId;
-        this.dayTime = dayTime;
-        this.duration = duration;
-        this.purpose = purpose;
-        this.status = status;
     }
 
     // Getters and Setters
@@ -31,36 +28,76 @@ public class Appointment {
         this.id = id;
     }
 
-    public int getAssignmentId() {
-        return assignmentId;
+    public String getStudentUsername() {
+        return studentUsername;
     }
 
-    public void setAssignmentId(int assignmentId) {
-        this.assignmentId = assignmentId;
+    public void setStudentUsername(String studentUsername) {
+        this.studentUsername = studentUsername;
     }
 
-    public Date getDayTime() {
-        return dayTime;
+    public String getAdvisorId() {
+        return advisorId;
     }
 
-    public void setDayTime(Date dayTime) {
-        this.dayTime = dayTime;
+    public void setAdvisorId(String advisorId) {
+        this.advisorId = advisorId;
     }
 
-    public int getDuration() {
-        return duration;
+    public String getAdvisorName() {
+        return advisorName;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setAdvisorName(String advisorName) {
+        this.advisorName = advisorName;
     }
 
-    public String getPurpose() {
-        return purpose;
+    public String getAdvisorTitle() {
+        return advisorTitle;
     }
 
-    public void setPurpose(String purpose) {
-        this.purpose = purpose;
+    public void setAdvisorTitle(String advisorTitle) {
+        this.advisorTitle = advisorTitle;
+    }
+
+    public String getAppointmentType() {
+        return appointmentType;
+    }
+
+    public void setAppointmentType(String appointmentType) {
+        this.appointmentType = appointmentType;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getAdditionalNotes() {
+        return additionalNotes;
+    }
+
+    public void setAdditionalNotes(String additionalNotes) {
+        this.additionalNotes = additionalNotes;
     }
 
     public String getStatus() {
@@ -71,19 +108,11 @@ public class Appointment {
         this.status = status;
     }
 
-    public Date getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public void showDate() {
-        System.out.println("Appointment date: " + dayTime);
-    }
-
-    public boolean isAvailable() {
-        return status.equals("scheduled");
     }
 }

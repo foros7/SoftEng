@@ -1,20 +1,29 @@
 package com.mycompany.softeng.model;
 
+import java.sql.Timestamp;
+
 public class User {
     private int id;
     private String username;
     private String password;
-    private String userType;
-    private String name;
+    private String fullName;
+    private String email;
+    private String phone;
+    private String dateOfBirth;
+    private String role;
+    private String title;
+    private String major;
+    private String yearLevel;
+    private Timestamp createdAt;
 
     public User() {
     }
 
-    public User(String username, String password, String userType, String name) {
+    public User(String username, String password, String fullName, String role) {
         this.username = username;
         this.password = password;
-        this.userType = userType;
-        this.name = name;
+        this.fullName = fullName;
+        this.role = role;
     }
 
     // Getters and Setters
@@ -42,19 +51,75 @@ public class User {
         this.password = password;
     }
 
-    public String getUserType() {
-        return userType;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setUserType(String userType) {
-        this.userType = userType;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-    public String getName() {
-        return name;
+    public String getEmail() {
+        return email;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public String getYearLevel() {
+        return yearLevel;
+    }
+
+    public void setYearLevel(String yearLevel) {
+        this.yearLevel = yearLevel;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }
