@@ -11,6 +11,8 @@ public class Assignment {
     private String technologies;
     private String progress;
     private int studentId;
+    private int supervisorId;
+    private String studentName;
     private Timestamp createdAt;
 
     public Assignment() {
@@ -81,6 +83,22 @@ public class Assignment {
 
     public void setStudentId(int studentId) {
         this.studentId = studentId;
+    }
+
+    public int getSupervisorId() {
+        return supervisorId;
+    }
+
+    public void setSupervisorId(int supervisorId) {
+        this.supervisorId = supervisorId;
+    }
+
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 
     public Timestamp getCreatedAt() {

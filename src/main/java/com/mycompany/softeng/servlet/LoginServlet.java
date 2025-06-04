@@ -2,12 +2,13 @@ package com.mycompany.softeng.servlet;
 
 import com.mycompany.softeng.dao.UserDAO;
 import com.mycompany.softeng.model.User;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import com.mycompany.softeng.util.DatabaseUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,10 +47,17 @@ public class LoginServlet extends HttpServlet {
 
             if (user != null) {
                 LOGGER.info("Authentication successful for user: " + username);
+                LOGGER.info("User role from database: " + user.getRole());
+                LOGGER.info("User fullName from database: " + user.getFullName());
+
                 HttpSession session = request.getSession();
                 session.setAttribute("username", username);
                 session.setAttribute("role", user.getRole());
                 session.setAttribute("fullName", user.getFullName());
+
+                LOGGER.info("Session created with ID: " + session.getId());
+                LOGGER.info("Session attributes set - username: " + session.getAttribute("username") + ", role: "
+                        + session.getAttribute("role"));
 
                 String redirectUrl;
                 switch (user.getRole().toLowerCase()) {

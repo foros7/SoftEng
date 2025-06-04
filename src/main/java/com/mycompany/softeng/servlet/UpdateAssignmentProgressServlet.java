@@ -10,12 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/update-assignment-progress")
 public class UpdateAssignmentProgressServlet extends HttpServlet {
@@ -38,7 +38,7 @@ public class UpdateAssignmentProgressServlet extends HttpServlet {
 
         if (assignmentId == null || progress == null) {
             request.setAttribute("error", "Missing required parameters");
-            request.getRequestDispatcher("student.jsp").forward(request, response);
+            request.getRequestDispatcher("student-dashboard.jsp").forward(request, response);
             return;
         }
 
@@ -48,7 +48,7 @@ public class UpdateAssignmentProgressServlet extends HttpServlet {
 
             if (assignment == null) {
                 request.setAttribute("error", "Assignment not found");
-                request.getRequestDispatcher("student.jsp").forward(request, response);
+                request.getRequestDispatcher("student-dashboard.jsp").forward(request, response);
                 return;
             }
 
@@ -56,7 +56,7 @@ public class UpdateAssignmentProgressServlet extends HttpServlet {
             int studentId = getStudentIdFromUsername(username);
             if (assignment.getStudentId() != studentId) {
                 request.setAttribute("error", "You don't have permission to update this assignment");
-                request.getRequestDispatcher("student.jsp").forward(request, response);
+                request.getRequestDispatcher("student-dashboard.jsp").forward(request, response);
                 return;
             }
 
@@ -65,11 +65,11 @@ public class UpdateAssignmentProgressServlet extends HttpServlet {
             assignmentDAO.update(assignment);
 
             LOGGER.info("Assignment progress updated successfully for student: " + username);
-            response.sendRedirect("student.jsp");
+            response.sendRedirect("student-dashboard");
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error updating assignment progress", e);
             request.setAttribute("error", "Failed to update progress: " + e.getMessage());
-            request.getRequestDispatcher("student.jsp").forward(request, response);
+            request.getRequestDispatcher("student-dashboard.jsp").forward(request, response);
         }
     }
 

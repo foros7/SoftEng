@@ -15,7 +15,7 @@ public class AssignmentDAO {
     }
 
     public void create(Assignment assignment) throws SQLException {
-        String sql = "INSERT INTO assignments (topic, start_date, language, technologies, progress, student_id) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO assignments (topic, start_date, language, technologies, progress, student_id, supervisor_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, assignment.getTopic());
@@ -24,6 +24,7 @@ public class AssignmentDAO {
             stmt.setString(4, assignment.getTechnologies());
             stmt.setString(5, assignment.getProgress());
             stmt.setInt(6, assignment.getStudentId());
+            stmt.setInt(7, assignment.getSupervisorId());
 
             stmt.executeUpdate();
 
@@ -72,7 +73,7 @@ public class AssignmentDAO {
     }
 
     public void update(Assignment assignment) throws SQLException {
-        String sql = "UPDATE assignments SET topic = ?, start_date = ?, language = ?, technologies = ?, progress = ? WHERE id = ?";
+        String sql = "UPDATE assignments SET topic = ?, start_date = ?, language = ?, technologies = ?, progress = ?, supervisor_id = ? WHERE id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, assignment.getTopic());
@@ -80,7 +81,8 @@ public class AssignmentDAO {
             stmt.setString(3, assignment.getLanguage());
             stmt.setString(4, assignment.getTechnologies());
             stmt.setString(5, assignment.getProgress());
-            stmt.setInt(6, assignment.getId());
+            stmt.setInt(6, assignment.getSupervisorId());
+            stmt.setInt(7, assignment.getId());
 
             stmt.executeUpdate();
         }
@@ -104,6 +106,7 @@ public class AssignmentDAO {
         assignment.setTechnologies(rs.getString("technologies"));
         assignment.setProgress(rs.getString("progress"));
         assignment.setStudentId(rs.getInt("student_id"));
+        assignment.setSupervisorId(rs.getInt("supervisor_id"));
         assignment.setCreatedAt(rs.getTimestamp("created_at"));
         return assignment;
     }

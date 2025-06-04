@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -361,6 +362,7 @@
                                                 <th>Topic</th>
                                                 <th>Language</th>
                                                 <th>Technologies</th>
+                                                <th>Supervisor</th>
                                                 <th>Progress</th>
                                                 <th>Action</th>
                                             </tr>
@@ -371,6 +373,23 @@
                                                     <td>${assignment.topic}</td>
                                                     <td>${assignment.language}</td>
                                                     <td>${assignment.technologies}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${assignment.studentName != null && !empty assignment.studentName}">
+                                                                ${assignment.studentName}
+                                                            </c:when>
+                                                            <c:when test="${assignment.supervisorId > 0}">
+                                                                <c:forEach var="prof" items="${professors}">
+                                                                    <c:if test="${prof.id == assignment.supervisorId}">
+                                                                        ${prof.name}
+                                                                    </c:if>
+                                                                </c:forEach>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted">No Supervisor</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
                                                     <td>
                                                         <form action="update-assignment-progress" method="POST" class="d-inline">
                                                             <input type="hidden" name="assignmentId" value="${assignment.id}">
@@ -405,17 +424,17 @@
                                         <div class="flex-shrink-0">
                                             <div class="bg-primary text-white rounded p-2 text-center" style="width: 50px;">
                                                 <div class="small">
-                                                    <fmt:formatDate value="${appointment.dayTime}" pattern="MMM"/>
+                                                    ${fn:substring(appointment.date, 5, 7)}
                                                 </div>
                                                 <div class="fw-bold">
-                                                    <fmt:formatDate value="${appointment.dayTime}" pattern="dd"/>
+                                                    ${fn:substring(appointment.date, 8, 10)}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-0">${appointment.purpose}</h6>
+                                            <h6 class="mb-0">${appointment.reason}</h6>
                                             <small class="text-muted">
-                                                <fmt:formatDate value="${appointment.dayTime}" pattern="hh:mm a"/>
+                                                ${appointment.time}
                                             </small>
                                         </div>
                                     </div>
@@ -499,6 +518,15 @@
                         <div class="mb-3">
                             <label for="technologies" class="form-label">Technologies Used</label>
                             <input type="text" class="form-control" id="technologies" name="technologies" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="supervisorId" class="form-label">Supervisor</label>
+                            <select class="form-select" id="supervisorId" name="supervisorId" required>
+                                <option value="">Select Supervisor</option>
+                                <c:forEach var="prof" items="${professors}">
+                                    <option value="${prof.id}">${prof.name}</option>
+                                </c:forEach>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="progress" class="form-label">Progress</label>

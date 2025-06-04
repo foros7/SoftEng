@@ -122,7 +122,7 @@ public class UserDAO {
                     LOGGER.info("User role: " + user.getRole());
                     return user;
                 } else {
-                    LOGGER.warning("No user found with username: " + username);
+                    LOGGER.warning("No user found with username: " + username + " or password mismatch");
                 }
             }
         } catch (SQLException e) {

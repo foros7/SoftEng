@@ -1,11 +1,11 @@
 package com.mycompany.softeng.servlet;
 
 import com.mycompany.softeng.util.DatabaseUtil;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -154,10 +154,41 @@ public class DiagnosticServlet extends HttpServlet {
         // Check users table
         checkUsersTable(out);
 
-        // Check password hashing
-        checkPasswordHashing(response);
+        // Test login functionality
+        testLogin(out);
 
         out.println("</body>");
         out.println("</html>");
+    }
+
+    private void testLogin(PrintWriter out) {
+        out.println("<h3>Login Test:</h3>");
+        out.println("<p>Testing login with test/test credentials:</p>");
+
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, "test");
+                stmt.setString(2, "test");
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        out.println("<p style='color: green;'>✅ Found user 'test' with password 'test'</p>");
+                        out.println("<p>User details:</p>");
+                        out.println("<ul>");
+                        out.println("<li>ID: " + rs.getInt("id") + "</li>");
+                        out.println("<li>Username: " + rs.getString("username") + "</li>");
+                        out.println("<li>Name: " + rs.getString("name") + "</li>");
+                        out.println("<li>User Type: " + rs.getString("user_type") + "</li>");
+                        out.println("</ul>");
+                    } else {
+                        out.println(
+                                "<p style='color: red;'>❌ No user found with username 'test' and password 'test'</p>");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            out.println("<p style='color: red;'>❌ Database error: " + e.getMessage() + "</p>");
+        }
     }
 }
