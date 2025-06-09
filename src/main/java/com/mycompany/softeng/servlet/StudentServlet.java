@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +21,6 @@ import jakarta.servlet.http.HttpSession;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-@WebServlet({ "/StudentServlet", "/student-dashboard" })
 public class StudentServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(StudentServlet.class.getName());
 
@@ -73,7 +71,13 @@ public class StudentServlet extends HttpServlet {
                 request.setAttribute("completedAssignments", completedAssignments);
                 request.setAttribute("upcomingAppointments", upcomingAppointments);
 
-                LOGGER.info("Student dashboard loaded for: " + username + " with " + totalAssignments + " assignments");
+                LOGGER.info("Student dashboard loaded for: " + username + " with " + totalAssignments
+                        + " assignments and " + appointments.size() + " appointments");
+                // Debug: Log appointment details
+                for (Appointment apt : appointments) {
+                    LOGGER.info("Appointment found: ID=" + apt.getId() + ", Student=" + apt.getStudentUsername()
+                            + ", Date=" + apt.getDate() + ", Status=" + apt.getStatus());
+                }
             } else {
                 // Set empty lists if student not found
                 request.setAttribute("assignments", new ArrayList<>());
@@ -209,6 +213,18 @@ public class StudentServlet extends HttpServlet {
                     assignment.setStudentId(rs.getInt("student_id"));
                     assignment.setSupervisorId(rs.getInt("supervisor_id"));
                     assignment.setCreatedAt(rs.getTimestamp("created_at"));
+
+                    // Set file information (handle case where columns don't exist yet)
+                    try {
+                        assignment.setFileName(rs.getString("file_name"));
+                        assignment.setFilePath(rs.getString("file_path"));
+                        assignment.setFileSize(rs.getLong("file_size"));
+                        assignment.setFileUploadedAt(rs.getTimestamp("file_uploaded_at"));
+                    } catch (SQLException e) {
+                        // File columns don't exist yet - ignore
+                        LOGGER.warning("File columns not found in assignments table - run database migration");
+                    }
+
                     assignments.add(assignment);
                 }
             }
@@ -237,7 +253,10 @@ public class StudentServlet extends HttpServlet {
 
     private List<Appointment> getStudentAppointments(String username) throws SQLException {
         List<Appointment> appointments = new ArrayList<>();
-        String sql = "SELECT * FROM appointments WHERE student_username = ? AND status != 'cancelled' ORDER BY appointment_date DESC LIMIT 5";
+        String sql = "SELECT a.*, u.name as advisor_name FROM appointments a " +
+                "LEFT JOIN users u ON a.advisor_id = u.id " +
+                "WHERE a.student_username = ? AND a.status != 'cancelled' " +
+                "ORDER BY a.appointment_date DESC LIMIT 5";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -248,6 +267,8 @@ public class StudentServlet extends HttpServlet {
                     appointment.setId(rs.getInt("id"));
                     appointment.setStudentUsername(rs.getString("student_username"));
                     appointment.setAdvisorId(rs.getString("advisor_id"));
+                    appointment.setAdvisorName(
+                            rs.getString("advisor_name") != null ? rs.getString("advisor_name") : "Unknown Advisor");
                     appointment.setAppointmentType(rs.getString("appointment_type"));
                     appointment.setDate(rs.getString("appointment_date"));
                     appointment.setTime(rs.getString("appointment_time"));

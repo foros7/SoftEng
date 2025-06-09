@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/get-advisors")
 public class GetAdvisorsServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(GetAdvisorsServlet.class.getName());
@@ -37,7 +36,7 @@ public class GetAdvisorsServlet extends HttpServlet {
 
     private List<Advisor> getAdvisors() throws SQLException {
         List<Advisor> advisors = new ArrayList<>();
-        String sql = "SELECT id, username, name, title FROM users WHERE user_type = 'professor' ORDER BY name";
+        String sql = "SELECT id, username, name FROM users WHERE user_type = 'professor' ORDER BY name";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
@@ -48,7 +47,7 @@ public class GetAdvisorsServlet extends HttpServlet {
                 advisor.setId(rs.getString("id"));
                 advisor.setUsername(rs.getString("username"));
                 advisor.setName(rs.getString("name"));
-                advisor.setTitle(rs.getString("title"));
+                advisor.setTitle("Professor"); // Set default title
                 advisors.add(advisor);
             }
         }

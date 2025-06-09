@@ -1,194 +1,91 @@
 package com.mycompany.softeng.servlet;
 
 import com.mycompany.softeng.util.DatabaseUtil;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/diagnostic")
 public class DiagnosticServlet extends HttpServlet {
-
-    private void checkDatabaseConnection(PrintWriter out) {
-        out.println("<h3>Database Connection Test:</h3>");
-        boolean dbConnected = DatabaseUtil.testConnection();
-        if (dbConnected) {
-            out.println("<p style='color: green;'>✅ Database connection: SUCCESS</p>");
-        } else {
-            out.println("<p style='color: red;'>❌ Database connection: FAILED</p>");
-            out.println("<p>Check if MySQL is running and credentials are correct in DatabaseUtil.java</p>");
-        }
-    }
-
-    private void checkUsersTable(PrintWriter out) {
-        out.println("<h3>Users Table Test:</h3>");
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            Statement stmt = conn.createStatement();
-
-            // Check if users table exists
-            ResultSet rs = stmt.executeQuery("SHOW TABLES LIKE 'users'");
-            if (rs.next()) {
-                out.println("<p style='color: green;'>✅ Users table: EXISTS</p>");
-
-                // Show table structure
-                out.println("<h4>Table Structure:</h4>");
-                rs = stmt.executeQuery("DESCRIBE users");
-                out.println(
-                        "<table border='1'><tr><th>Field</th><th>Type</th><th>Null</th><th>Key</th><th>Default</th><th>Extra</th></tr>");
-                while (rs.next()) {
-                    out.println("<tr>");
-                    out.println("<td>" + rs.getString("Field") + "</td>");
-                    out.println("<td>" + rs.getString("Type") + "</td>");
-                    out.println("<td>" + rs.getString("Null") + "</td>");
-                    out.println("<td>" + rs.getString("Key") + "</td>");
-                    out.println("<td>" + rs.getString("Default") + "</td>");
-                    out.println("<td>" + rs.getString("Extra") + "</td>");
-                    out.println("</tr>");
-                }
-                out.println("</table>");
-
-                // Count users
-                rs = stmt.executeQuery("SELECT COUNT(*) as count FROM users");
-                if (rs.next()) {
-                    int userCount = rs.getInt("count");
-                    out.println("<p>👥 Total users in database: " + userCount + "</p>");
-
-                    if (userCount > 0) {
-                        // Show sample users
-                        rs = stmt.executeQuery("SELECT * FROM users LIMIT 5");
-                        ResultSetMetaData metaData = rs.getMetaData();
-                        int columnCount = metaData.getColumnCount();
-
-                        out.println("<p>Sample users:</p><table border='1'><tr>");
-                        for (int i = 1; i <= columnCount; i++) {
-                            out.println("<th>" + metaData.getColumnName(i) + "</th>");
-                        }
-                        out.println("</tr>");
-
-                        while (rs.next()) {
-                            out.println("<tr>");
-                            for (int i = 1; i <= columnCount; i++) {
-                                out.println("<td>" + rs.getString(i) + "</td>");
-                            }
-                            out.println("</tr>");
-                        }
-                        out.println("</table>");
-                    } else {
-                        out.println(
-                                "<p style='color: orange;'>⚠️ No users found in database. <a href='setup-test-data'>Click here to setup test data</a></p>");
-                    }
-                }
-            } else {
-                out.println("<p style='color: red;'>❌ Users table: NOT FOUND</p>");
-            }
-
-        } catch (Exception e) {
-            out.println("<p style='color: red;'>❌ Database query error: " + e.getMessage() + "</p>");
-            e.printStackTrace(out);
-        }
-    }
-
-    private void checkPasswordHashing(HttpServletResponse response) throws IOException {
-        PrintWriter out = response.getWriter();
-        out.println("<h2>Password Hashing Test</h2>");
-
-        String testPassword = "password123";
-        String sql = "SELECT SHA2(?, 256) as hash";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, testPassword);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    String hash = rs.getString("hash");
-                    out.println("<p>Test password: " + testPassword + "</p>");
-                    out.println("<p>Generated hash: " + hash + "</p>");
-
-                    // Check if this hash exists in the database
-                    String checkSql = "SELECT username FROM users WHERE password = ?";
-                    try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-                        checkStmt.setString(1, hash);
-                        try (ResultSet checkRs = checkStmt.executeQuery()) {
-                            out.println("<p>Users with this password hash:</p>");
-                            out.println("<ul>");
-                            while (checkRs.next()) {
-                                out.println("<li>" + checkRs.getString("username") + "</li>");
-                            }
-                            out.println("</ul>");
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            out.println("<p style='color: red;'>Error checking password hash: " + e.getMessage() + "</p>");
-        }
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+
+        response.setContentType("text/html");
         PrintWriter out = response.getWriter();
 
-        out.println("<!DOCTYPE html>");
-        out.println("<html>");
-        out.println("<head>");
-        out.println("<title>Database Diagnostic</title>");
-        out.println("</head>");
-        out.println("<body>");
-        out.println("<h1>Database Diagnostic Results</h1>");
+        out.println("<html><head><title>Database Diagnostic</title></head><body>");
+        out.println("<h1>Database Diagnostic Report</h1>");
 
-        // Check database connection
-        checkDatabaseConnection(out);
+        try (Connection conn = DatabaseUtil.getConnection();
+                Statement stmt = conn.createStatement()) {
 
-        // Check users table
-        checkUsersTable(out);
+            // Show all users
+            out.println("<h2>All Users:</h2>");
+            out.println("<table border='1'>");
+            out.println("<tr><th>ID</th><th>Username</th><th>Name</th><th>User Type</th></tr>");
 
-        // Test login functionality
-        testLogin(out);
-
-        out.println("</body>");
-        out.println("</html>");
-    }
-
-    private void testLogin(PrintWriter out) {
-        out.println("<h3>Login Test:</h3>");
-        out.println("<p>Testing login with test/test credentials:</p>");
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, "test");
-                stmt.setString(2, "test");
-
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        out.println("<p style='color: green;'>✅ Found user 'test' with password 'test'</p>");
-                        out.println("<p>User details:</p>");
-                        out.println("<ul>");
-                        out.println("<li>ID: " + rs.getInt("id") + "</li>");
-                        out.println("<li>Username: " + rs.getString("username") + "</li>");
-                        out.println("<li>Name: " + rs.getString("name") + "</li>");
-                        out.println("<li>User Type: " + rs.getString("user_type") + "</li>");
-                        out.println("</ul>");
-                    } else {
-                        out.println(
-                                "<p style='color: red;'>❌ No user found with username 'test' and password 'test'</p>");
-                    }
-                }
+            ResultSet rs = stmt
+                    .executeQuery("SELECT id, username, name, user_type FROM users ORDER BY user_type, username");
+            while (rs.next()) {
+                out.println("<tr>");
+                out.println("<td>" + rs.getInt("id") + "</td>");
+                out.println("<td>" + rs.getString("username") + "</td>");
+                out.println("<td>" + rs.getString("name") + "</td>");
+                out.println("<td>" + rs.getString("user_type") + "</td>");
+                out.println("</tr>");
             }
-        } catch (SQLException e) {
-            out.println("<p style='color: red;'>❌ Database error: " + e.getMessage() + "</p>");
+            out.println("</table>");
+
+            // Show all appointments
+            out.println("<h2>All Appointments:</h2>");
+            out.println("<table border='1'>");
+            out.println(
+                    "<tr><th>ID</th><th>Student Username</th><th>Advisor ID</th><th>Date</th><th>Time</th><th>Status</th></tr>");
+
+            rs = stmt.executeQuery(
+                    "SELECT id, student_username, advisor_id, appointment_date, appointment_time, status FROM appointments ORDER BY appointment_date DESC");
+            while (rs.next()) {
+                out.println("<tr>");
+                out.println("<td>" + rs.getInt("id") + "</td>");
+                out.println("<td>" + rs.getString("student_username") + "</td>");
+                out.println("<td>" + rs.getString("advisor_id") + "</td>");
+                out.println("<td>" + rs.getDate("appointment_date") + "</td>");
+                out.println("<td>" + rs.getTime("appointment_time") + "</td>");
+                out.println("<td>" + rs.getString("status") + "</td>");
+                out.println("</tr>");
+            }
+            out.println("</table>");
+
+            // Show appointments for alice_johnson specifically
+            out.println("<h2>Appointments for alice_johnson:</h2>");
+            rs = stmt.executeQuery(
+                    "SELECT COUNT(*) as count FROM appointments WHERE student_username = 'alice_johnson'");
+            if (rs.next()) {
+                out.println("<p>Count: " + rs.getInt("count") + "</p>");
+            }
+
+            // Show distinct student usernames in appointments
+            out.println("<h2>Distinct Student Usernames in Appointments:</h2>");
+            out.println("<ul>");
+            rs = stmt.executeQuery("SELECT DISTINCT student_username FROM appointments");
+            while (rs.next()) {
+                out.println("<li>" + rs.getString("student_username") + "</li>");
+            }
+            out.println("</ul>");
+
+        } catch (Exception e) {
+            out.println("<h2 style='color: red;'>Error:</h2>");
+            out.println("<p>" + e.getMessage() + "</p>");
+            e.printStackTrace(out);
         }
+
+        out.println("</body></html>");
     }
 }

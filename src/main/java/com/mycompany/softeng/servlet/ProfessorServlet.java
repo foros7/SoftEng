@@ -2,11 +2,12 @@ package com.mycompany.softeng.servlet;
 
 import com.mycompany.softeng.model.Professor;
 import com.mycompany.softeng.model.Assignment;
+import com.mycompany.softeng.model.Notification;
 import com.mycompany.softeng.dao.AssignmentDAO;
+import com.mycompany.softeng.dao.NotificationDAO;
 import com.mycompany.softeng.util.DatabaseUtil;
 import java.io.IOException;
 import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,8 +16,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
 
-@WebServlet({ "/professor-dashboard", "/ProfessorServlet" })
 public class ProfessorServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(ProfessorServlet.class.getName());
 
@@ -44,6 +46,11 @@ public class ProfessorServlet extends HttpServlet {
             // Get professor ID
             int professorId = getProfessorIdFromUsername(username);
 
+            // Load notifications
+            NotificationDAO notificationDAO = new NotificationDAO();
+            List<Notification> notifications = notificationDAO.getUnreadNotifications(username);
+            int notificationCount = notificationDAO.getUnreadCount(username);
+
             if (professorId == -1) {
                 LOGGER.warning("Professor ID not found for username: " + username);
                 request.setAttribute("supervisedCount", 0);
@@ -65,7 +72,7 @@ public class ProfessorServlet extends HttpServlet {
                 int pendingAssignments = (int) supervisedAssignments.stream()
                         .filter(a -> "Not Started".equals(a.getProgress()) || "In Progress".equals(a.getProgress()))
                         .count();
-                int appointmentsCount = 3; // Placeholder - implement actual count later
+                int appointmentsCount = getAppointmentRequestCount(professorId);
 
                 // Set attributes
                 request.setAttribute("supervisedCount", supervisedCount);
@@ -76,6 +83,10 @@ public class ProfessorServlet extends HttpServlet {
                 LOGGER.info("Professor dashboard loaded for: " + username + " with " + supervisedCount
                         + " supervised assignments");
             }
+
+            // Set notification attributes
+            request.setAttribute("notifications", notifications);
+            request.setAttribute("notificationCount", notificationCount);
 
         } catch (SQLException e) {
             LOGGER.severe("Database error: " + e.getMessage());
@@ -225,6 +236,18 @@ public class ProfessorServlet extends HttpServlet {
                     assignment.setStudentId(rs.getInt("student_id"));
                     assignment.setSupervisorId(rs.getInt("supervisor_id"));
                     assignment.setCreatedAt(rs.getTimestamp("created_at"));
+
+                    // Set file information (handle case where columns don't exist yet)
+                    try {
+                        assignment.setFileName(rs.getString("file_name"));
+                        assignment.setFilePath(rs.getString("file_path"));
+                        assignment.setFileSize(rs.getLong("file_size"));
+                        assignment.setFileUploadedAt(rs.getTimestamp("file_uploaded_at"));
+                    } catch (SQLException e) {
+                        // File columns don't exist yet - ignore
+                        LOGGER.warning("File columns not found in assignments table - run database migration");
+                    }
+
                     assignments.add(assignment);
                 }
             }
@@ -244,5 +267,19 @@ public class ProfessorServlet extends HttpServlet {
             }
         }
         return "Unknown Student";
+    }
+
+    private int getAppointmentRequestCount(int professorId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE advisor_id = ? AND status = 'pending'";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, String.valueOf(professorId));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 }

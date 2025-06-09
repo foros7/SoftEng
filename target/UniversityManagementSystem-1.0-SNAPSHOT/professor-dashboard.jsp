@@ -27,37 +27,66 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f5f7fb;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
 
         .sidebar {
             background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            min-height: 100vh;
+            height: 100vh;
             padding: 20px;
             color: white;
             position: fixed;
             width: 250px;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .sidebar-brand {
-            padding: 20px 0;
+            padding: 15px 0;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
+            flex-shrink: 0;
         }
 
         .sidebar-brand h2 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             margin: 0;
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
+            padding: 10px 15px;
             border-radius: 8px;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             transition: all 0.3s ease;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
         }
 
         .nav-link:hover, .nav-link.active {
@@ -66,22 +95,32 @@
         }
 
         .nav-link i {
-            width: 24px;
+            width: 20px;
             text-align: center;
             margin-right: 10px;
+            font-size: 14px;
         }
 
         .main-content {
             margin-left: 250px;
-            padding: 30px;
+            padding: 15px;
+            min-height: 100vh;
+            max-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: calc(100vw - 250px);
+            box-sizing: border-box;
         }
 
         .topbar {
             background: white;
-            padding: 15px 30px;
+            padding: 15px 20px;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .card {
@@ -89,7 +128,51 @@
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: transform 0.3s ease;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                padding: 10px;
+                width: calc(100vw - 200px);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 10px;
+                width: 100vw;
+            }
+        }
+
+        /* Force content to fit */
+        .container-fluid {
+            padding: 0;
+            margin: 0;
+        }
+
+        .row {
+            margin: 0;
+        }
+
+        .col-md-8, .col-md-4, .col-xl-3, .col-md-6 {
+            padding-left: 7px;
+            padding-right: 7px;
         }
 
         .card:hover {
@@ -202,6 +285,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="professor-appointments">
+                            <i class="fas fa-calendar-check"></i> My Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#createAppointmentModal">
                             <i class="fas fa-calendar-plus"></i> Create Appointment
                         </a>
@@ -216,13 +304,8 @@
                             <i class="fas fa-chart-bar"></i> Generate Report
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.jsp">
-                            <i class="fas fa-user"></i> Profile
-                        </a>
-                    </li>
                     <li class="nav-item mt-auto">
-                        <a class="nav-link" href="login.jsp">
+                        <a class="nav-link" href="login">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>
@@ -235,7 +318,56 @@
                 <div class="topbar d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Welcome, ${sessionScope.username}</h4>
                     <div class="d-flex align-items-center">
-                        <span class="me-3"><i class="fas fa-bell"></i></span>
+                        <div class="dropdown me-3">
+                            <button class="btn btn-outline-primary position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <c:if test="${notificationCount > 0}">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        ${notificationCount}
+                                    </span>
+                                </c:if>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" style="width: 450px; max-height: 400px; overflow-y: auto;">
+                                <li class="dropdown-header">
+                                    <strong>Notifications</strong>
+                                    <c:if test="${notificationCount > 0}">
+                                        <span class="badge bg-primary ms-2">${notificationCount}</span>
+                                    </c:if>
+                                </li>
+                                <c:choose>
+                                    <c:when test="${not empty notifications}">
+                                        <c:forEach var="notification" items="${notifications}" begin="0" end="4">
+                                            <li class="notification-item px-3 py-2" style="border-bottom: 1px solid #eee;">
+                                                <div class="fw-bold text-truncate">${notification.title}</div>
+                                                <div class="small text-muted text-truncate mb-2">${notification.message}</div>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="small text-muted">
+                                                        <fmt:formatDate value="${notification.createdAt}" pattern="MMM dd, HH:mm" />
+                                                    </div>
+                                                    <c:if test="${notification.type == 'appointment_request'}">
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button" class="btn btn-success btn-sm" 
+                                                                    onclick="handleNotificationAction('accept', '${notification.id}', '${notification.relatedId}')">
+                                                                <i class="fas fa-check"></i> Accept
+                                                            </button>
+                                                            <button type="button" class="btn btn-danger btn-sm" 
+                                                                    onclick="handleNotificationAction('decline', '${notification.id}', '${notification.relatedId}')">
+                                                                <i class="fas fa-times"></i> Decline
+                                                            </button>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+                                            </li>
+                                        </c:forEach>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-center" href="#">View All Notifications</a></li>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <li><span class="dropdown-item text-muted">No new notifications</span></li>
+                                    </c:otherwise>
+                                </c:choose>
+                            </ul>
+                        </div>
                         <span><i class="fas fa-user-circle"></i></span>
                     </div>
                 </div>
@@ -327,8 +459,8 @@
                                         <th>Student</th>
                                         <th>Topic</th>
                                         <th>Language</th>
-                                        <th>Technologies</th>
                                         <th>Progress</th>
+                                        <th>File</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -350,13 +482,16 @@
                                                     </td>
                                                     <td>
                                                         <div class="fw-bold">${assignment.topic}</div>
-                                                        <small class="text-muted">Started: <fmt:formatDate value="${assignment.startDate}" pattern="MMM dd, yyyy"/></small>
+                                                        <small class="text-muted">
+                                                            Started: <fmt:formatDate value="${assignment.startDate}" pattern="MMM dd, yyyy"/><br>
+                                                            <span class="badge bg-secondary">${assignment.language}</span>
+                                                            <c:if test="${not empty assignment.technologies}">
+                                                                | ${assignment.technologies}
+                                                            </c:if>
+                                                        </small>
                                                     </td>
                                                     <td>
                                                         <span class="badge bg-info">${assignment.language}</span>
-                                                    </td>
-                                                    <td>
-                                                        <small>${assignment.technologies}</small>
                                                     </td>
                                                     <td>
                                                         <c:choose>
@@ -375,16 +510,57 @@
                                                         </c:choose>
                                                     </td>
                                                     <td>
+                                                        <c:choose>
+                                                            <c:when test="${assignment.hasFile()}">
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="fas fa-file text-success me-2"></i>
+                                                                    <div>
+                                                                        <div class="fw-bold">${assignment.fileName}</div>
+                                                                        <small class="text-muted">
+                                                                            ${assignment.formattedFileSize}
+                                                                            <c:if test="${assignment.fileUploadedAt != null}">
+                                                                                | <fmt:formatDate value="${assignment.fileUploadedAt}" pattern="MMM dd, yyyy"/>
+                                                                            </c:if>
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted">No file uploaded</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
                                                         <div class="btn-group" role="group">
+                                                            <c:if test="${assignment.hasFile()}">
+                                                                <a href="download-assignment-file?assignmentId=${assignment.id}" 
+                                                                   class="btn btn-outline-success btn-sm" title="Download File">
+                                                                    <i class="fas fa-download"></i>
+                                                                </a>
+                                                            </c:if>
                                                             <button type="button" class="btn btn-outline-primary btn-sm grade-btn" 
                                                                     data-assignment-id="${assignment.id}" 
                                                                     data-assignment-topic="${assignment.topic}" 
                                                                     data-student-name="${assignment.studentName}"
-                                                                    data-bs-toggle="modal" data-bs-target="#markAssignmentModal">
+                                                                    data-has-file="${assignment.hasFile()}"
+                                                                    data-file-name="${assignment.fileName}"
+                                                                    data-bs-toggle="modal" data-bs-target="#markAssignmentModal"
+                                                                    title="Grade Assignment">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
+                                                            <button type="button" class="btn btn-outline-info btn-sm view-details-btn" 
+                                                                    data-assignment-id="${assignment.id}" 
+                                                                    data-assignment-topic="${assignment.topic}" 
+                                                                    data-student-name="${assignment.studentName}"
+                                                                    data-technologies="${assignment.technologies}"
+                                                                    data-has-file="${assignment.hasFile()}"
+                                                                    data-file-name="${assignment.fileName}"
+                                                                    title="View Details">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
                                                             <button type="button" class="btn btn-outline-success btn-sm complete-btn" 
-                                                                    data-assignment-id="${assignment.id}">
+                                                                    data-assignment-id="${assignment.id}"
+                                                                    title="Mark Complete">
                                                                 <i class="fas fa-check"></i>
                                                             </button>
                                                         </div>
@@ -416,6 +592,9 @@
                             </div>
                             <div class="card-body">
                                 <div class="d-grid gap-2">
+                                    <a href="professor-appointments" class="btn btn-success">
+                                        <i class="fas fa-calendar-check me-2"></i>View My Appointments
+                                    </a>
                                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAppointmentModal">
                                         <i class="fas fa-calendar-plus me-2"></i>Schedule Office Hours
                                     </button>
@@ -525,6 +704,19 @@
                             <label class="form-label">Assignment</label>
                             <div id="assignmentInfo" class="form-control-plaintext bg-light p-2 rounded"></div>
                         </div>
+                        <div class="mb-3" id="fileInfoSection" style="display: none;">
+                            <label class="form-label">Submitted File</label>
+                            <div class="d-flex align-items-center bg-light p-2 rounded">
+                                <i class="fas fa-file text-success me-2"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold" id="fileInfoName">-</div>
+                                    <small class="text-muted" id="fileInfoDetails">-</small>
+                                </div>
+                                <a id="fileDownloadBtn" href="#" class="btn btn-sm btn-outline-success ms-2" title="Download File">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="grade" class="form-label">Grade</label>
@@ -615,12 +807,126 @@
         </div>
     </div>
 
+    <!-- Assignment Details Modal -->
+    <div class="modal fade" id="assignmentDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assignment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Student Information</h6>
+                            <div class="bg-light p-3 rounded">
+                                <div class="fw-bold" id="detailStudentName">-</div>
+                                <small class="text-muted" id="detailStudentId">Student ID: -</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Assignment Information</h6>
+                            <div class="bg-light p-3 rounded">
+                                <div class="fw-bold" id="detailAssignmentTopic">-</div>
+                                <small class="text-muted" id="detailAssignmentDetails">-</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Technologies Used</h6>
+                            <div class="bg-light p-3 rounded">
+                                <span id="detailTechnologies">-</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Progress Status</h6>
+                            <div class="bg-light p-3 rounded">
+                                <span id="detailProgress" class="badge">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3" id="detailFileSection" style="display: none;">
+                        <h6>Submitted File</h6>
+                        <div class="bg-light p-3 rounded d-flex align-items-center">
+                            <i class="fas fa-file text-success me-2"></i>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold" id="detailFileName">-</div>
+                                <small class="text-muted" id="detailFileInfo">-</small>
+                            </div>
+                            <a id="detailFileDownload" href="#" class="btn btn-sm btn-success ms-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="gradeFromDetailsBtn">Grade Assignment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function openMarkModal(assignmentId, topic, studentName) {
+        function openMarkModal(assignmentId, topic, studentName, hasFile, fileName, fileSize, fileDate) {
             document.getElementById('assignmentId').value = assignmentId;
             document.getElementById('assignmentInfo').innerHTML = 
                 '<strong>' + topic + '</strong><br><small>Student: ' + studentName + '</small>';
+            
+            // Show file information if file exists
+            const fileSection = document.getElementById('fileInfoSection');
+            if (hasFile && hasFile !== 'false') {
+                document.getElementById('fileInfoName').textContent = fileName || 'Unknown file';
+                document.getElementById('fileInfoDetails').textContent = (fileSize || 'Unknown size') + 
+                    (fileDate ? ' | Uploaded: ' + fileDate : '');
+                document.getElementById('fileDownloadBtn').href = 'download-assignment-file?assignmentId=' + assignmentId;
+                fileSection.style.display = 'block';
+            } else {
+                fileSection.style.display = 'none';
+            }
+        }
+        
+        function openDetailsModal(assignmentData) {
+            document.getElementById('detailStudentName').textContent = assignmentData.studentName;
+            document.getElementById('detailStudentId').textContent = 'Student ID: ' + assignmentData.studentId;
+            document.getElementById('detailAssignmentTopic').textContent = assignmentData.topic;
+            document.getElementById('detailAssignmentDetails').textContent = 'Language: ' + assignmentData.language;
+            document.getElementById('detailTechnologies').textContent = assignmentData.technologies || 'Not specified';
+            
+            // Set progress badge
+            const progressBadge = document.getElementById('detailProgress');
+            progressBadge.textContent = assignmentData.progress;
+            progressBadge.className = 'badge progress-badge progress-' + assignmentData.progress.toLowerCase().replace(' ', '-');
+            
+            // Show file section if file exists
+            const fileSection = document.getElementById('detailFileSection');
+            if (assignmentData.hasFile && assignmentData.hasFile !== 'false') {
+                document.getElementById('detailFileName').textContent = assignmentData.fileName;
+                document.getElementById('detailFileInfo').textContent = 'File size: ' + (assignmentData.fileSize || 'Unknown');
+                document.getElementById('detailFileDownload').href = 'download-assignment-file?assignmentId=' + assignmentData.assignmentId;
+                fileSection.style.display = 'block';
+            } else {
+                fileSection.style.display = 'none';
+            }
+            
+            // Set up grade button to open grade modal
+            document.getElementById('gradeFromDetailsBtn').onclick = function() {
+                const detailsModal = bootstrap.Modal.getInstance(document.getElementById('assignmentDetailsModal'));
+                detailsModal.hide();
+                setTimeout(() => {
+                    openMarkModal(assignmentData.assignmentId, assignmentData.topic, assignmentData.studentName, 
+                                assignmentData.hasFile, assignmentData.fileName);
+                    const gradeModal = new bootstrap.Modal(document.getElementById('markAssignmentModal'));
+                    gradeModal.show();
+                }, 300);
+            };
+            
+            const modal = new bootstrap.Modal(document.getElementById('assignmentDetailsModal'));
+            modal.show();
         }
 
         function markAsCompleted(assignmentId) {
@@ -673,7 +979,27 @@
                     const assignmentId = this.dataset.assignmentId;
                     const topic = this.dataset.assignmentTopic;
                     const studentName = this.dataset.studentName;
-                    openMarkModal(assignmentId, topic, studentName);
+                    const hasFile = this.dataset.hasFile;
+                    const fileName = this.dataset.fileName;
+                    openMarkModal(assignmentId, topic, studentName, hasFile, fileName);
+                });
+            });
+
+            // Add event listeners for view details buttons
+            document.querySelectorAll('.view-details-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const assignmentData = {
+                        assignmentId: this.dataset.assignmentId,
+                        topic: this.dataset.assignmentTopic,
+                        studentName: this.dataset.studentName,
+                        studentId: this.closest('tr').querySelector('small').textContent.replace('ID: ', ''),
+                        language: this.closest('tr').querySelector('.badge').textContent,
+                        technologies: this.dataset.technologies,
+                        progress: this.closest('tr').querySelector('.progress-badge').textContent,
+                        hasFile: this.dataset.hasFile,
+                        fileName: this.dataset.fileName
+                    };
+                    openDetailsModal(assignmentData);
                 });
             });
 
@@ -685,6 +1011,67 @@
                 });
             });
         });
+
+        // Handle notification accept/decline actions
+        function handleNotificationAction(action, notificationId, appointmentId) {
+            console.log('handleNotificationAction called:', action, notificationId, appointmentId);
+            
+            if (confirm('Are you sure you want to ' + action + ' this appointment request?')) {
+                console.log('User confirmed action');
+                
+                fetch('notification-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=' + encodeURIComponent(action) + '&notificationId=' + encodeURIComponent(notificationId) + '&appointmentId=' + encodeURIComponent(appointmentId)
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    return response.text(); // Get as text first to debug
+                })
+                .then(responseText => {
+                    console.log('Raw response:', responseText);
+                    
+                    try {
+                        const data = JSON.parse(responseText);
+                        console.log('Parsed response:', data);
+                        
+                        if (data.success) {
+                            // Show success message
+                            const alertDiv = document.createElement('div');
+                            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                            alertDiv.innerHTML = `
+                                <strong>Success!</strong> ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            `;
+                            document.body.appendChild(alertDiv);
+                            
+                            // Auto-hide after 3 seconds
+                            setTimeout(() => {
+                                alertDiv.remove();
+                            }, 3000);
+                            
+                            // Reload the page to update notifications
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (parseError) {
+                        console.error('JSON parse error:', parseError);
+                        alert('Server response was not valid JSON: ' + responseText);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('An error occurred while processing the request: ' + error.message);
+                });
+            }
+        }
     </script>
 </body>
 </html> 

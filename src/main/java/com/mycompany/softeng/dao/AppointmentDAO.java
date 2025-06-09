@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,7 +56,7 @@ public class AppointmentDAO {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, appointment.getStudentUsername());
             pstmt.setString(2, appointment.getAdvisorId());
@@ -66,10 +67,64 @@ public class AppointmentDAO {
             pstmt.setString(7, appointment.getAdditionalNotes());
             pstmt.setString(8, appointment.getStatus());
 
-            pstmt.executeUpdate();
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // Get the generated appointment ID
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int appointmentId = generatedKeys.getInt(1);
+                        appointment.setId(appointmentId);
+
+                        // Create notification for the advisor
+                        createNotificationForAdvisor(conn, appointment);
+                    }
+                }
+            }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error creating appointment", e);
             throw e;
+        }
+    }
+
+    private void createNotificationForAdvisor(Connection conn, Appointment appointment) throws SQLException {
+        // Get advisor username
+        String getAdvisorSql = "SELECT username FROM users WHERE id = ?";
+        String advisorUsername = null;
+
+        try (PreparedStatement stmt = conn.prepareStatement(getAdvisorSql)) {
+            stmt.setString(1, appointment.getAdvisorId());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    advisorUsername = rs.getString("username");
+                }
+            }
+        }
+
+        if (advisorUsername != null) {
+            String notificationSql = "INSERT INTO notifications (recipient_username, title, message, type, related_id, is_read) "
+                    +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+
+            String title = "New Appointment Request";
+            String message = String.format("Student %s has requested a %s appointment on %s at %s. Reason: %s",
+                    appointment.getStudentUsername(),
+                    appointment.getAppointmentType(),
+                    appointment.getDate(),
+                    appointment.getTime(),
+                    appointment.getReason());
+
+            try (PreparedStatement notifStmt = conn.prepareStatement(notificationSql)) {
+                notifStmt.setString(1, advisorUsername);
+                notifStmt.setString(2, title);
+                notifStmt.setString(3, message);
+                notifStmt.setString(4, "appointment_request");
+                notifStmt.setString(5, String.valueOf(appointment.getId()));
+                notifStmt.setBoolean(6, false);
+
+                notifStmt.executeUpdate();
+                LOGGER.info("Notification created for advisor: " + advisorUsername);
+            }
         }
     }
 

@@ -2,8 +2,247 @@
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
     <display-name>University Management System</display-name>
     
+    <!-- Disable annotation scanning to avoid conflicts -->
+    <metadata-complete>true</metadata-complete>
+    
+    <!-- Login Servlet -->
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Secretary Servlet -->
+    <servlet>
+        <servlet-name>SecretaryServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.SecretaryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SecretaryServlet</servlet-name>
+        <url-pattern>/SecretaryServlet</url-pattern>
+        <url-pattern>/secretary-dashboard</url-pattern>
+    </servlet-mapping>
+    
+    <!-- User Management Servlet -->
+    <servlet>
+        <servlet-name>UserManagementServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.UserManagementServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserManagementServlet</servlet-name>
+        <url-pattern>/UserManagementServlet</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Student Servlet -->
+    <servlet>
+        <servlet-name>StudentServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.StudentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StudentServlet</servlet-name>
+        <url-pattern>/StudentServlet</url-pattern>
+        <url-pattern>/student-dashboard</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Professor Servlet -->
+    <servlet>
+        <servlet-name>ProfessorServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.ProfessorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProfessorServlet</servlet-name>
+        <url-pattern>/ProfessorServlet</url-pattern>
+        <url-pattern>/professor-dashboard</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Update Assignment Progress Servlet -->
+    <servlet>
+        <servlet-name>UpdateAssignmentProgressServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.UpdateAssignmentProgressServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateAssignmentProgressServlet</servlet-name>
+        <url-pattern>/UpdateAssignmentProgressServlet</url-pattern>
+        <url-pattern>/update-assignment-progress</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Change Password Servlet -->
+    <servlet>
+        <servlet-name>ChangePasswordServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.ChangePasswordServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChangePasswordServlet</servlet-name>
+        <url-pattern>/ChangePasswordServlet</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Update Profile Servlet -->
+    <servlet>
+        <servlet-name>UpdateProfileServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.UpdateProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateProfileServlet</servlet-name>
+        <url-pattern>/UpdateProfileServlet</url-pattern>
+    </servlet-mapping>
+    
+    <!-- View Appointments Servlet -->
+    <servlet>
+        <servlet-name>ViewAppointmentsServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.ViewAppointmentsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ViewAppointmentsServlet</servlet-name>
+        <url-pattern>/ViewAppointmentsServlet</url-pattern>
+        <url-pattern>/view-appointments</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Book Appointment Servlet -->
+    <servlet>
+        <servlet-name>BookAppointmentServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.BookAppointmentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookAppointmentServlet</servlet-name>
+        <url-pattern>/BookAppointmentServlet</url-pattern>
+        <url-pattern>/book-appointment</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Get Advisors Servlet -->
+    <servlet>
+        <servlet-name>GetAdvisorsServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.GetAdvisorsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetAdvisorsServlet</servlet-name>
+        <url-pattern>/GetAdvisorsServlet</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Diagnostic Servlet -->
+    <servlet>
+        <servlet-name>DiagnosticServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.DiagnosticServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DiagnosticServlet</servlet-name>
+        <url-pattern>/diagnostic</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Setup Test Data Servlet -->
+    <servlet>
+        <servlet-name>SetupTestDataServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.SetupTestDataServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SetupTestDataServlet</servlet-name>
+        <url-pattern>/setup-test-data</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Insert Test Data Servlet -->
+    <servlet>
+        <servlet-name>InsertTestDataServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.InsertTestDataServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InsertTestDataServlet</servlet-name>
+        <url-pattern>/InsertTestDataServlet</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Sample Data Servlet -->
+    <servlet>
+        <servlet-name>SampleDataServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.SampleDataServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SampleDataServlet</servlet-name>
+        <url-pattern>/SampleDataServlet</url-pattern>
+        <url-pattern>/sample-data</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Debug Users Servlet -->
+    <servlet>
+        <servlet-name>DebugUsersServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.DebugUsersServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DebugUsersServlet</servlet-name>
+        <url-pattern>/DebugUsersServlet</url-pattern>
+        <url-pattern>/debug-users</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Professor Appointments Servlet -->
+    <servlet>
+        <servlet-name>ProfessorAppointmentsServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.ProfessorAppointmentsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProfessorAppointmentsServlet</servlet-name>
+        <url-pattern>/ProfessorAppointmentsServlet</url-pattern>
+        <url-pattern>/professor-appointments</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Notification Action Servlet -->
+    <servlet>
+        <servlet-name>NotificationActionServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.NotificationActionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NotificationActionServlet</servlet-name>
+        <url-pattern>/NotificationActionServlet</url-pattern>
+        <url-pattern>/notification-action</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Assignment File Upload Servlet -->
+    <servlet>
+        <servlet-name>AssignmentFileUploadServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.AssignmentFileUploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AssignmentFileUploadServlet</servlet-name>
+        <url-pattern>/AssignmentFileUploadServlet</url-pattern>
+        <url-pattern>/upload-assignment-file</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Assignment File Download Servlet -->
+    <servlet>
+        <servlet-name>AssignmentFileDownloadServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.AssignmentFileDownloadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AssignmentFileDownloadServlet</servlet-name>
+        <url-pattern>/AssignmentFileDownloadServlet</url-pattern>
+        <url-pattern>/download-assignment-file</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Test Notification Servlet -->
+    <servlet>
+        <servlet-name>TestNotificationServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.TestNotificationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestNotificationServlet</servlet-name>
+        <url-pattern>/TestNotificationServlet</url-pattern>
+        <url-pattern>/test-notification</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Database Migration Servlet -->
+    <servlet>
+        <servlet-name>DatabaseMigrationServlet</servlet-name>
+        <servlet-class>com.mycompany.softeng.servlet.DatabaseMigrationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DatabaseMigrationServlet</servlet-name>
+        <url-pattern>/DatabaseMigrationServlet</url-pattern>
+        <url-pattern>/admin/migrate-database</url-pattern>
+    </servlet-mapping>
+    
     <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
         <welcome-file>login.jsp</welcome-file>
+        <welcome-file>index.html</welcome-file>
     </welcome-file-list>
     
     <session-config>

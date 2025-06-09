@@ -40,7 +40,7 @@
                         </a>
                     </li>
                     <li class="nav-item mt-auto">
-                        <a class="nav-link" href="logout">
+                        <a class="nav-link" href="login">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>

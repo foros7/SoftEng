@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 public class Appointment {
     private int id;
     private String studentUsername;
+    private String studentName;
     private String advisorId;
     private String advisorName;
     private String advisorTitle;
@@ -34,6 +35,14 @@ public class Appointment {
 
     public void setStudentUsername(String studentUsername) {
         this.studentUsername = studentUsername;
+    }
+
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 
     public String getAdvisorId() {

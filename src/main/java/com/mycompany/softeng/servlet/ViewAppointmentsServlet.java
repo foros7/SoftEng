@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet("/view-appointments")
 public class ViewAppointmentsServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(ViewAppointmentsServlet.class.getName());
@@ -42,9 +41,9 @@ public class ViewAppointmentsServlet extends HttpServlet {
 
         try {
             StringBuilder sql = new StringBuilder(
-                    "SELECT a.*, u.name as advisor_name, u.title as advisor_title " +
+                    "SELECT a.*, u.name as advisor_name " +
                             "FROM appointments a " +
-                            "JOIN users u ON a.advisor_id = u.username " +
+                            "LEFT JOIN users u ON a.advisor_id = u.id " +
                             "WHERE a.student_username = ? ");
             List<Object> params = new ArrayList<>();
             params.add(username);
@@ -90,8 +89,9 @@ public class ViewAppointmentsServlet extends HttpServlet {
                     while (rs.next()) {
                         Appointment appointment = new Appointment();
                         appointment.setId(rs.getInt("id"));
-                        appointment.setAdvisorName(rs.getString("advisor_name"));
-                        appointment.setAdvisorTitle(rs.getString("advisor_title"));
+                        appointment.setAdvisorName(rs.getString("advisor_name") != null ? rs.getString("advisor_name")
+                                : "Unknown Advisor");
+                        appointment.setAdvisorTitle("Professor");
                         appointment.setAppointmentType(rs.getString("appointment_type"));
                         appointment.setDate(rs.getString("appointment_date"));
                         appointment.setTime(rs.getString("appointment_time"));
@@ -101,6 +101,8 @@ public class ViewAppointmentsServlet extends HttpServlet {
                         appointments.add(appointment);
                     }
                     request.setAttribute("appointments", appointments);
+                    LOGGER.info(
+                            "ViewAppointments: Found " + appointments.size() + " appointments for user: " + username);
                 }
             }
         } catch (SQLException e) {

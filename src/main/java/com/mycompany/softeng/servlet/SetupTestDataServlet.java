@@ -6,12 +6,10 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.Statement;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/setup-test-data")
 public class SetupTestDataServlet extends HttpServlet {
 
     @Override

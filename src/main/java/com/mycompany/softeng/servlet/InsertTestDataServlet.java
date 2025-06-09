@@ -18,7 +18,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/insert-test-data")
 public class InsertTestDataServlet extends HttpServlet {
 
     @Override

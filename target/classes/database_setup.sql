@@ -47,6 +47,19 @@ CREATE TABLE IF NOT EXISTS appointments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create notifications table
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    recipient_username VARCHAR(50) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    related_id VARCHAR(50),
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (recipient_username) REFERENCES users(username) ON DELETE CASCADE
+);
+
 -- Insert test users
 INSERT INTO users (username, password, name, email, phone, user_type, title, major, year_level) VALUES
 ('student1', SHA2('password123', 256), 'John Doe', 'john.doe@university.edu', '+30 123 456 7890', 'student', 'Undergraduate Student', 'Computer Science', '4th Year'),

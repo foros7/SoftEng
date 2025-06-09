@@ -15,6 +15,12 @@ public class Assignment {
     private String studentName;
     private Timestamp createdAt;
 
+    // File upload related fields
+    private String fileName;
+    private String filePath;
+    private long fileSize;
+    private Timestamp fileUploadedAt;
+
     public Assignment() {
     }
 
@@ -107,6 +113,64 @@ public class Assignment {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // File-related getters and setters
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public Timestamp getFileUploadedAt() {
+        return fileUploadedAt;
+    }
+
+    public void setFileUploadedAt(Timestamp fileUploadedAt) {
+        this.fileUploadedAt = fileUploadedAt;
+    }
+
+    public boolean hasFile() {
+        return fileName != null && !fileName.trim().isEmpty();
+    }
+
+    // Safe getter that handles null values
+    public String getFileNameSafe() {
+        return fileName != null ? fileName : "";
+    }
+
+    public String getFormattedFileSize() {
+        if (fileSize <= 0)
+            return "N/A";
+
+        final String[] units = { "B", "KB", "MB", "GB" };
+        int unitIndex = 0;
+        double size = fileSize;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return String.format("%.2f %s", size, units[unitIndex]);
     }
 
     public void show_Proodos() {
